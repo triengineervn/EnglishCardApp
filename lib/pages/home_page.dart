@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:english_card_app/models/english_today.dart';
+import 'package:english_card_app/pages/all_page.dart';
 import 'package:english_card_app/pages/all_words_page.dart';
 import 'package:english_card_app/pages/control_page.dart';
 import 'package:english_card_app/values/app_assets.dart';
@@ -11,6 +12,7 @@ import 'package:english_card_app/values/share_key.dart';
 import 'package:english_card_app/widgets/app_buttons.dart';
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
+import 'package:like_button/like_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../packages/quote/quote.dart';
@@ -130,7 +132,7 @@ class HomePageState extends State<HomePage> {
                     _currentIndex = index;
                   });
                 },
-                itemCount: words.length,
+                itemCount: words.length > 5 ? 6 : words.length,
                 itemBuilder: (context, index) {
                   String fisrtLetter =
                       words[index].noun != null ? words[index].noun! : '';
@@ -146,73 +148,140 @@ class HomePageState extends State<HomePage> {
 
                   return Padding(
                     padding: const EdgeInsets.all(4),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: const BoxDecoration(
-                        color: AppColors.JORDY_BLUE,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black38,
-                            offset: Offset(3, 6),
-                            blurRadius: 6,
-                          ),
-                        ],
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(24),
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            alignment: Alignment.centerRight,
-                            child: Image.asset(AppAssets.heart),
-                          ),
-                          RichText(
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.start,
-                            text: TextSpan(
-                              text: fisrtLetter,
-                              style: TextStyle(
-                                fontFamily: FontFamily.sen,
-                                fontSize: 80,
-                                fontWeight: FontWeight.bold,
-                                shadows: const [
-                                  BoxShadow(
-                                      color: AppColors.BLACK,
-                                      offset: Offset(3, 6),
-                                      blurRadius: 6),
-                                ],
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: leftLetter,
-                                  style: TextStyle(
-                                    fontFamily: FontFamily.sen,
-                                    fontSize: 52,
-                                    fontWeight: FontWeight.bold,
-                                    shadows: const [
-                                      BoxShadow(
-                                          color: AppColors.BLACK,
-                                          offset: Offset(3, 6),
-                                          blurRadius: 6),
-                                    ],
+                    child: Material(
+                      borderRadius: const BorderRadius.all(Radius.circular(24)),
+                      color: AppColors.JORDY_BLUE,
+                      elevation: 4,
+                      child: InkWell(
+                        onDoubleTap: () {
+                          setState(() {
+                            words[index].isFavorite = !words[index].isFavorite;
+                          });
+                        },
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(24)),
+                        splashColor: Colors.black38,
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          child: index >= 5
+                              ? InkWell(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => AllPage(words: words),
+                                      ),
+                                    );
+                                  },
+                                  child: Center(
+                                    child: Text(
+                                      'Show more...',
+                                      style: AppStyles.h3.copyWith(
+                                        shadows: [
+                                          const BoxShadow(
+                                              color: AppColors.BLACK,
+                                              offset: Offset(3, 6),
+                                              blurRadius: 6),
+                                        ],
+                                      ),
+                                    ),
                                   ),
+                                )
+                              : Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    LikeButton(
+                                      onTap: (bool isLiked) async {
+                                        setState(() {
+                                          words[index].isFavorite =
+                                              !words[index].isFavorite;
+                                        });
+                                        return words[index].isFavorite;
+                                      },
+                                      isLiked: words[index].isFavorite,
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      size: 42,
+                                      circleColor: const CircleColor(
+                                          start: Color(0xff00ddff),
+                                          end: Color(0xff0099cc)),
+                                      bubblesColor: const BubblesColor(
+                                        dotPrimaryColor: Color(0xff33b5e5),
+                                        dotSecondaryColor: Color(0xff0099cc),
+                                      ),
+                                      likeBuilder: (bool isLiked) {
+                                        return ImageIcon(
+                                          const AssetImage(AppAssets.heart),
+                                          color: isLiked
+                                              ? Colors.red
+                                              : Colors.grey,
+                                          size: 42,
+                                        );
+                                        // return Icon(
+                                        //   Icons.home,
+                                        //   color: isLiked
+                                        //       ? Colors.deepPurpleAccent
+                                        //       : Colors.grey,
+                                        //   size: 42,
+                                        // );
+                                      },
+                                    ),
+                                    // Container(
+                                    //   alignment: Alignment.centerRight,
+                                    //   child: Image.asset(
+                                    //     AppAssets.heart,
+                                    //     color: words[index].isFavorite
+                                    //         ? Colors.red
+                                    //         : Colors.white,
+                                    //   ),
+                                    // ),
+                                    RichText(
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.start,
+                                      text: TextSpan(
+                                        text: fisrtLetter,
+                                        style: TextStyle(
+                                          fontFamily: FontFamily.sen,
+                                          fontSize: 70,
+                                          fontWeight: FontWeight.bold,
+                                          shadows: const [
+                                            BoxShadow(
+                                                color: AppColors.BLACK,
+                                                offset: Offset(3, 6),
+                                                blurRadius: 6),
+                                          ],
+                                        ),
+                                        children: [
+                                          TextSpan(
+                                            text: leftLetter,
+                                            style: TextStyle(
+                                              fontFamily: FontFamily.sen,
+                                              fontSize: 35,
+                                              fontWeight: FontWeight.bold,
+                                              shadows: const [
+                                                BoxShadow(
+                                                    color: AppColors.BLACK,
+                                                    offset: Offset(3, 6),
+                                                    blurRadius: 6),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 24),
+                                      child: AutoSizeText(
+                                        '"$quote"',
+                                        maxFontSize: 24,
+                                        style: AppStyles.h4.copyWith(
+                                            letterSpacing: 1,
+                                            color: AppColors.JET),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 24),
-                            child: AutoSizeText(
-                              '"$quote"',
-                              maxFontSize: 24,
-                              style: AppStyles.h4.copyWith(
-                                  letterSpacing: 1, color: AppColors.JET),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   );
